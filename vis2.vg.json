@@ -1,0 +1,80 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 700,
+  "height": 400,
+  "data": {"url": "Homework10_dataset.csv"},
+  
+  "params": [
+    {
+      "name": "sex_selection",
+      "value": "All",
+      "bind": {
+        "input": "select",
+        "options": ["All", "male", "female"],
+        "labels": ["All", "Male", "Female"],
+        "name": "Choose Sex: "
+      }
+    },
+    {
+      "name": "ethnicity_selection",
+      "value": "All",
+      "bind": {
+        "input": "select",
+        "options": ["All", "bumi_malay", "chinese", "indian"],
+        "labels": ["All", "Bumiputera Malay", "Chinese", "Indian"],
+        "name": "Choose Ethnicity: "
+      }
+    }
+  ],
+
+  "transform": [
+    {
+      "filter": "(datum.sex != 'both') && (sex_selection == 'All' || datum.sex == sex_selection) && (ethnicity_selection == 'All' || datum.ethnicity == ethnicity_selection)"
+    }
+  ],
+
+  "mark": {"type": "bar"},
+  
+  "encoding": {
+    "x": {
+      "field": "state",
+      "type": "nominal",
+      "sort": {"op": "sum", "field": "abs", "order": "descending"},
+      "axis": {"title": "State", "labelAngle": -50}
+    },
+    "y": {
+      "aggregate": "sum",
+      "field": "abs",
+      "type": "quantitative",
+      "axis": {"title": "Total Deaths"}
+    },
+
+    "color": {
+      "condition": {
+        "test": "sex_selection == 'All' && ethnicity_selection == 'All'",
+        "field": "ethnicity",
+        "type": "nominal",
+        "title": "Ethnicity"
+      },
+      "value": "steelblue"
+    },
+
+    "tooltip": [
+      {"field": "state", "type": "nominal", "title": "State"},
+      {"field": "sex", "type": "nominal", "title": "Sex"},
+      {"field": "ethnicity", "type": "nominal", "title": "Ethnicity"},
+      {
+        "aggregate": "sum",
+        "field": "abs",
+        "type": "quantitative",
+        "title": "Total Deaths",
+        "format": ","
+      }
+    ]
+  },
+
+  "config": {
+    "view": {"stroke": "transparent"},
+    "axis": {"labelFontSize": 12, "titleFontSize": 13}
+  }
+}

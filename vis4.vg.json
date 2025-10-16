@@ -1,0 +1,74 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "data": { "url": "Homework10_dataset.csv" },
+  "params": [
+    {
+      "name": "year_sel",
+      "value": 2023,
+      "bind": {
+        "input": "select",
+        "name": "Select Year: ",
+        "options": [2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023]
+      }
+    }
+  ],
+
+  "transform": [
+    {
+      "calculate": "datetime(+split(datum.date, '/')[2], +split(datum.date, '/')[0]-1, +split(datum.date, '/')[1])",
+      "as": "date_parsed"
+    },
+    { "calculate": "year(datum.date_parsed)", "as": "year" },
+    { "calculate": "toNumber(datum.population) * 1000", "as": "population_num" },
+
+    {
+      "filter": "datum.ethnicity == 'bumi_malay' || datum.ethnicity == 'chinese' || datum.ethnicity == 'indian'"
+    },
+    { "filter": "datum.year == year_sel" },
+
+    {
+      "aggregate": [{"op": "sum", "field": "population_num", "as": "pop_sum"}],
+      "groupby": ["ethnicity", "sex"]
+    },
+
+    { "filter": "datum.sex != 'both'" },
+
+    {
+      "joinaggregate": [
+        {"op": "sum", "field": "pop_sum", "as": "ethnicity_total_no_both"}
+      ],
+      "groupby": ["ethnicity"]
+    },
+
+    { "calculate": "datum.pop_sum / datum.ethnicity_total_no_both", "as": "pct_within_ethnicity" }
+  ],
+
+  "facet": {
+    "column": {
+      "field": "ethnicity",
+      "type": "nominal",
+      "header": {
+        "labelAngle": 0,
+        "labelFontSize": 15,
+        "labelFontWeight": "bold",
+        "title": null
+      }
+    }
+  },
+
+  "spec": {
+    "width": 200,
+    "height": 300,
+    "mark": { "type": "arc" },
+    "encoding": {
+      "theta": { "field": "pop_sum", "type": "quantitative" },
+      "color": { "field": "sex", "type": "nominal", "title": "Sex" },
+      "tooltip": [
+        { "field": "ethnicity", "title": "Ethnicity" },
+        { "field": "sex", "title": "Sex" },
+        { "field": "pop_sum", "type": "quantitative", "title": "Population", "format": "," },
+        { "field": "pct_within_ethnicity", "type": "quantitative", "title": "Share", "format": ".1%" }
+      ]
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 800,
+  "height": 400,
+  "title": "Death Rate per 100,000 Population by State in Malaysia (2023)",
+  "layer": [
+    {
+      "data": {"graticule": {}},
+      "mark": {"type": "geoshape", "stroke": "#782828", "strokeWidth": 0.5}
+    },
+    {
+      "data": {
+        "url": "geoBoundaries-MYS-ADM1_simplified.topojson",
+        "format": {"type": "topojson", "feature": "MYSADM1gbOpen"}
+      },
+      "mark": {"type": "geoshape", "fill": "none", "stroke": "black", "strokeWidth": 1.5}
+    },
+    {
+      "data": {
+        "url": "geoBoundaries-MYS-ADM1_simplified.topojson",
+        "format": {"type": "topojson", "feature": "MYSADM1gbOpen"}
+      },
+      "transform": [
+        {
+          "lookup": "properties.shapeName",
+          "from": {
+            "data": {"url": "Homework10_dataset.csv", "format": {"type": "csv"}},
+            "key": "state",
+            "fields": ["abs", "sex", "ethnicity", "date", "population"]
+          },
+          "as": ["abs", "sex", "ethnicity", "date", "population"]
+        },
+        {"filter": "lower(datum.sex) == 'both'"},
+        {"calculate": "toNumber(datum.abs)", "as": "abs_num"},
+        {"calculate": "toNumber(datum.population) * 1000", "as": "population_num"},
+        {"calculate": "(datum.abs_num / datum.population_num) * 100000", "as": "death_rate_per100k"}
+      ],
+      "mark": {"type": "geoshape"},
+      "encoding": {
+        "color": {
+          "field": "death_rate_per100k",
+          "type": "quantitative",
+          "title": "Deaths per 100,000 Population",
+          "scale": {"scheme": "orangered"}
+        },
+        "tooltip": [
+          {"field": "properties.shapeName", "title": "State"},
+          {"field": "abs_num", "title": "Total Deaths"},
+          {"field": "population_num", "title": "Total Population"},
+          {"field": "death_rate_per100k", "title": "Deaths per 100k"},
+          {"field": "sex", "title": "Sex"},
+          {"field": "ethnicity", "title": "Ethnicity"}
+        ]
+      }
+    }
+  ],
+  "projection": {"type": "equalEarth", "center": [110, 4], "scale": 1900}
+}
